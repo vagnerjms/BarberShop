@@ -24,8 +24,9 @@ app.get('/connect', async (req, res) => {
     });
     
     const data = await response.json();
+    console.log('[DEBUG /connect] Status da resposta:', response.status, 'Retorno (início):', JSON.stringify(data).substring(0, 150));
     
-    if (response.status === 200 && data.qrcode && data.qrcode.base64) {
+    if (response.ok && data.qrcode && data.qrcode.base64) {
       // Retorna uma página HTML bonita com o QR code renderizado
       res.send(`
         <!DOCTYPE html>
