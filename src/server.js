@@ -462,6 +462,41 @@ app.post('/api/bookings', async (req, res) => {
   }
 });
 
+app.delete('/api/bookings/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const booking = await Booking.findById(id);
+    if (!booking) {
+      return res.status(404).json({ error: 'Agendamento não encontrado' });
+    }
+    
+    await Booking.findByIdAndDelete(id);
+    
+    const logMsg = `Agendamento CANCELADO: Cliente ${booking.clientName} com Barbeiro ${booking.barberName} em ${booking.dateTime}.`;
+    const log = new Log({ message: logMsg });
+    await log.save();
+    
+    // Disparar Webhook de cancelamento para o n8n em segundo plano
+    const n8nCancelWebhookUrl = process.env.N8N_CANCEL_WEBHOOK_URL || 'http://n8n:5678/webhook/booking-cancel';
+    fetch(n8nCancelWebhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(booking)
+    })
+    .then(webRes => {
+      console.log(`Webhook n8n de cancelamento respondido com status ${webRes.status}`);
+    })
+    .catch(webErr => {
+      console.warn('Alerta: n8n offline ou webhook de cancelamento não ativo:', webErr.message);
+    });
+    
+    res.status(200).json({ success: true, message: 'Agendamento cancelado com sucesso' });
+  } catch (error) {
+    console.error('Erro ao cancelar agendamento:', error);
+    res.status(500).json({ error: 'Erro ao cancelar agendamento' });
+  }
+});
+
 // 4. Logs de Auditoria
 app.get('/api/logs', async (req, res) => {
   try {

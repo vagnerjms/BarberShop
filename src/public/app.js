@@ -281,13 +281,10 @@ async function fetchBookings() {
     const res = await fetch('/api/bookings');
     bookings = await res.json();
     
-    if (bookingsCountEl) bookingsCountEl.textContent = bookings.length;
-    
-    if (bookingsListEl) {
-      if (bookings.length === 0) {
+    if (bookingsCountEl) bookingsCountEl.textContent = bookings.leng      if (bookings.length === 0) {
         bookingsListEl.innerHTML = `
           <tr>
-            <td colspan="5" class="empty-state">Nenhum agendamento realizado hoje.</td>
+            <td colspan="6" class="empty-state">Nenhum agendamento realizado hoje.</td>
           </tr>
         `;
         return;
@@ -302,6 +299,11 @@ async function fetchBookings() {
           <td>${booking.barberName}</td>
           <td><strong>${booking.dateTime}</strong></td>
           <td>${booking.contactPhone}</td>
+          <td>
+            <button class="action-btn delete-btn" onclick="cancelBooking('${booking._id}')" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;">
+              Cancelar
+            </button>
+          </td>
         `;
         bookingsListEl.appendChild(row);
       });
@@ -311,7 +313,7 @@ async function fetchBookings() {
     if (bookingsListEl) {
       bookingsListEl.innerHTML = `
         <tr>
-          <td colspan="5" class="empty-state text-danger">Erro ao carregar agendamentos.</td>
+          <td colspan="6" class="empty-state text-danger">Erro ao carregar agendamentos.</td>
         </tr>
       `;
     }
@@ -830,6 +832,29 @@ async function saveBookingAPI() {
       sendBotMessage("Ocorreu um erro ao conectar ao servidor. Deseja tentar de novo?", ['Sim, Recomeçar', 'Não, Cancelar']);
       currentState = 'MENU';
     }
+  }
+}
+
+async function cancelBooking(id) {
+  if (!confirm("Deseja realmente cancelar este agendamento? Esta ação enviará uma notificação de cancelamento via WhatsApp para o cliente e não poderá ser desfeita.")) {
+    return;
+  }
+  
+  try {
+    const res = await fetch(`/api/bookings/${id}`, {
+      method: 'DELETE'
+    });
+    
+    if (res.ok) {
+      alert("Agendamento cancelado com sucesso!");
+      refreshDashboard();
+    } else {
+      const err = await res.json();
+      alert(`Erro ao cancelar agendamento: ${err.error}`);
+    }
+  } catch (error) {
+    console.error('Erro ao cancelar agendamento:', error);
+    alert("Erro ao conectar ao servidor para cancelar o agendamento.");
   }
 }
 
