@@ -22,8 +22,8 @@
         "url": "=http://evolution:8080/message/sendText/BarberStudio",
         "authentication": "none",
         "sendHeaders": true,
-        "headersUi": {
-          "parameter": [
+        "headerParameters": {
+          "parameters": [
             {
               "name": "apikey",
               "value": "barbershop_key_123"
