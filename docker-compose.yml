@@ -48,6 +48,8 @@ services:
       - DATABASE_PROVIDER=postgresql
       - DATABASE_CONNECTION_URI=postgresql://evolution:evolution_password_123@postgres:5432/evolution?schema=public
       - DATABASE_CONNECTION_CLIENT_NAME=barbershop_evolution
+      - CACHE_REDIS_ENABLED=false
+      - CACHE_LOCAL_ENABLED=true
     depends_on:
       - postgres
     restart: always
