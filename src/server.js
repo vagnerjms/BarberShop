@@ -26,7 +26,18 @@ app.get('/connect', async (req, res) => {
     const data = await response.json();
     console.log('[DEBUG /connect] Status da resposta:', response.status, 'Retorno (início):', JSON.stringify(data).substring(0, 150));
     
-    if (response.ok && data.qrcode && data.qrcode.base64) {
+    let qrImageSrc = '';
+    if (data.qrcode && data.qrcode.base64) {
+      qrImageSrc = data.qrcode.base64;
+    } else if (data.base64) {
+      qrImageSrc = data.base64;
+    } else if (data.code) {
+      qrImageSrc = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(data.code)}`;
+    } else if (data.qrcode && data.qrcode.code) {
+      qrImageSrc = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(data.qrcode.code)}`;
+    }
+    
+    if (response.ok && qrImageSrc) {
       // Retorna uma página HTML bonita com o QR code renderizado
       res.send(`
         <!DOCTYPE html>
@@ -92,7 +103,7 @@ app.get('/connect', async (req, res) => {
           <div class="card">
             <h1>Conectar WhatsApp</h1>
             <p>Escaneie o QR Code abaixo com seu WhatsApp para ativar o envio automático de mensagens de agendamento.</p>
-            <img src="${data.qrcode.base64}" alt="QR Code WhatsApp">
+            <img src="${qrImageSrc}" alt="QR Code WhatsApp">
             <div class="step">
               <strong>Como parear:</strong>
               <ol>
@@ -125,7 +136,7 @@ app.get('/connect', async (req, res) => {
           <div class="card">
             <h1>WhatsApp Desconectado ou Não Inicializado</h1>
             <p>O contêiner da Evolution API está rodando, mas a instância <b>BarberStudio</b> pode não ter sido criada no terminal do seu servidor ou a chave de API é inválida.</p>
-            <p>Retorno: ${data.response?.message || 'Instância ainda não conectada ou sem QR Code ativo.'}</p>
+            <p>Retorno: ${data.response?.message || data.message || 'Instância ainda não conectada ou sem QR Code ativo.'}</p>
             <button onclick="window.location.reload()">Recarregar Página</button>
           </div>
         </body>
