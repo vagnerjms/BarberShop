@@ -17,7 +17,7 @@ app.get('/admin', (req, res) => {
 
 app.get('/connect', async (req, res) => {
   try {
-    const response = await fetch('http://barbershop-evolution:8080/instance/connect/BarberStudio', {
+    const response = await fetch('http://evolution:8080/instance/connect/BarberStudio', {
       headers: {
         'apikey': 'barbershop_key_123'
       }
@@ -347,7 +347,7 @@ app.post('/api/bookings', async (req, res) => {
     await log.save();
     
     // Disparar Webhook para o n8n em segundo plano (comunicando internamente no docker)
-    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'http://barbershop-n8n:5678/webhook/booking';
+    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'http://n8n:5678/webhook/booking';
     fetch(n8nWebhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
