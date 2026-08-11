@@ -12,7 +12,7 @@ services:
     build: .
     container_name: barbershop-web
     ports:
-      - "8085:3000"
+      - "8090:3000"
     environment:
       - MONGO_URI=mongodb://db:27017/barbershop
       - PORT=3000
