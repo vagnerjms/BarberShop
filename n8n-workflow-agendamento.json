@@ -1,20 +1,37 @@
 {
-  "name": "Envio de Notificação - Agendamento BarberStudio",
+  "name": "BarberStudio - Fluxo Principal (Agendamento & Cancelamento)",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
         "path": "booking",
+        "responseMode": "onReceived",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2,
+      "typeVersion": 1.1,
       "position": [
         0,
-        0
+        -100
       ],
-      "id": "webhook-booking-trigger",
+      "id": "webhook-booking-confirm",
       "name": "Webhook - Novo Agendamento"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "booking-cancel",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        150
+      ],
+      "id": "webhook-booking-cancel",
+      "name": "Webhook - Cancelamento"
     },
     {
       "parameters": {
@@ -38,10 +55,37 @@
       "typeVersion": 4,
       "position": [
         260,
-        0
+        -100
       ],
       "id": "evolution-send-text",
-      "name": "Evolution API - Enviar WhatsApp"
+      "name": "Evolution API - Enviar WhatsApp (Confirmacao)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution:8080/message/sendText/BarberStudio",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "barbershop_key_123"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.body.contactPhone.startsWith('55') ? $json.body.contactPhone : '55' + $json.body.contactPhone }}\",\n  \"text\": \"Olá, *{{ $json.body.clientName }}*! \\n\\nInformamos que o seu agendamento na *BarberStudio* para *{{ $json.body.dateTime }}* foi *CANCELADO* pelo administrador.\\n\\nCaso tenha dúvidas ou queira reagendar, entre em contato ou acesse nossa central de agendamento! 💈\",\n  \"delay\": 1200\n}"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        260,
+        150
+      ],
+      "id": "evolution-send-cancel-text",
+      "name": "Evolution API - Enviar WhatsApp (Cancelamento)"
     }
   ],
   "connections": {
@@ -49,7 +93,18 @@
       "main": [
         [
           {
-            "node": "Evolution API - Enviar WhatsApp",
+            "node": "Evolution API - Enviar WhatsApp (Confirmacao)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Cancelamento": {
+      "main": [
+        [
+          {
+            "node": "Evolution API - Enviar WhatsApp (Cancelamento)",
             "type": "main",
             "index": 0
           }
@@ -57,13 +112,13 @@
       ]
     }
   },
+  "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "staticData": null,
+  "versionId": "f05b2e59-fdf2-42b9-9d32-cdb2cdb2cdb1",
+  "id": "barberstudio-main-flow",
   "meta": {
     "templateCredsSetupCompleted": true
-  },
-  "pinData": {},
-  "active": true
+  }
 }
