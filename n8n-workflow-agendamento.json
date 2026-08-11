@@ -19,7 +19,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=http://barbershop-evolution:8080/message/sendText/BarberStudio",
+        "url": "=http://evolution:8080/message/sendText/BarberStudio",
         "authentication": "none",
         "sendHeaders": true,
         "headersUi": {
@@ -32,7 +32,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"number\": \"{{ $json.body.contactPhone }}\",\n  \"options\": {\n    \"delay\": 1200,\n    \"presence\": \"composing\"\n  },\n  \"textMessage\": {\n    \"text\": \"Olá, *{{ $json.body.clientName }}*! \\n\\nSeu agendamento na *BarberStudio* foi confirmado com sucesso!\\n\\n✂️ *Serviço:* {{ $json.body.serviceName }}\\n💈 *Barbeiro:* {{ $json.body.barberName }}\\n📅 *Data/Hora:* {{ $json.body.dateTime }}\\n\\nTe esperamos lá! 💈\"\n  }\n}"
+        "jsonBody": "={\n  \"number\": \"{{ $json.body.contactPhone.startsWith('55') ? $json.body.contactPhone : '55' + $json.body.contactPhone }}\",\n  \"options\": {\n    \"delay\": 1200,\n    \"presence\": \"composing\"\n  },\n  \"textMessage\": {\n    \"text\": \"Olá, *{{ $json.body.clientName }}*! \\n\\nSeu agendamento na *BarberStudio* foi confirmado com sucesso!\\n\\n✂️ *Serviço:* {{ $json.body.serviceName }}\\n💈 *Barbeiro:* {{ $json.body.barberName }}\\n📅 *Data/Hora:* {{ $json.body.dateTime }}\\n\\nTe esperamos lá! 💈\"\n  }\n}"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
