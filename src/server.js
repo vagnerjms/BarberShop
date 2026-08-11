@@ -224,6 +224,20 @@ app.post('/api/bookings', async (req, res) => {
     const log = new Log({ message: logMsg });
     await log.save();
     
+    // Disparar Webhook para o n8n em segundo plano (comunicando internamente no docker)
+    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'http://barbershop-n8n:5678/webhook/booking';
+    fetch(n8nWebhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newBooking)
+    })
+    .then(webRes => {
+      console.log(`Webhook n8n respondido com status ${webRes.status}`);
+    })
+    .catch(webErr => {
+      console.warn('Alerta: n8n offline ou webhook não ativo:', webErr.message);
+    });
+    
     res.status(201).json(newBooking);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao criar agendamento' });

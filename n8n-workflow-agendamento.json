@@ -1,0 +1,69 @@
+{
+  "name": "Envio de Notificação - Agendamento BarberStudio",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "booking",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "webhook-booking-trigger",
+      "name": "Webhook - Novo Agendamento"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://barbershop-evolution:8080/message/sendText/BarberStudio",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "barbershop_key_123"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.body.contactPhone }}\",\n  \"options\": {\n    \"delay\": 1200,\n    \"presence\": \"composing\"\n  },\n  \"textMessage\": {\n    \"text\": \"Olá, *{{ $json.body.clientName }}*! \\n\\nSeu agendamento na *BarberStudio* foi confirmado com sucesso!\\n\\n✂️ *Serviço:* {{ $json.body.serviceName }}\\n💈 *Barbeiro:* {{ $json.body.barberName }}\\n📅 *Data/Hora:* {{ $json.body.dateTime }}\\n\\nTe esperamos lá! 💈\"\n  }\n}"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        260,
+        0
+      ],
+      "id": "evolution-send-text",
+      "name": "Evolution API - Enviar WhatsApp"
+    }
+  ],
+  "connections": {
+    "Webhook - Novo Agendamento": {
+      "main": [
+        [
+          {
+            "node": "Evolution API - Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "active": true
+}
