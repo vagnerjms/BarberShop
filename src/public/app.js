@@ -492,11 +492,26 @@ function getAvailableTimeSlots(barberName) {
       allPossibleSlots.push(`${day} - ${slot}`);
     });
   });
+
+  // Filtrar horários passados se o dia for "Hoje"
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+
+  const activeSlots = allPossibleSlots.filter(slot => {
+    const [day, time] = slot.split(' - ');
+    if (day === 'Hoje') {
+      const [hour, minute] = time.split(':').map(Number);
+      if (hour < currentHour) return false;
+      if (hour === currentHour && minute <= currentMinute) return false;
+    }
+    return true;
+  });
   
   // Se for um barbeiro específico
   if (barberName.toLowerCase() !== 'primeiro disponível') {
     // Filtrar horários onde já existe um agendamento para este barbeiro
-    return allPossibleSlots.filter(slot => {
+    return activeSlots.filter(slot => {
       const isBooked = bookings.some(b => 
         b.barberName.toLowerCase() === barberName.toLowerCase() && 
         b.dateTime === slot
@@ -506,7 +521,7 @@ function getAvailableTimeSlots(barberName) {
   } else {
     // Se for "Primeiro Disponível"
     // O horário só fica indisponível se TODOS os barbeiros ativos estiverem ocupados
-    return allPossibleSlots.filter(slot => {
+    return activeSlots.filter(slot => {
       // Barbeiros ocupados nesse slot
       const bookedBarbersCount = bookings.filter(b => b.dateTime === slot).length;
       // Se a quantidade de barbeiros ocupados é menor que a quantidade total de barbeiros ativos, o horário está livre!
