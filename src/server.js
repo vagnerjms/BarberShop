@@ -44,6 +44,7 @@ app.get('/connect', async (req, res) => {
         <html>
         <head>
           <title>Conectar WhatsApp - BarberStudio</title>
+          <meta http-equiv="refresh" content="15">
           <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
           <style>
             body {
