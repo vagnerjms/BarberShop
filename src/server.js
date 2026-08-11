@@ -15,6 +15,127 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+app.get('/connect', async (req, res) => {
+  try {
+    const response = await fetch('http://barbershop-evolution:8080/instance/connect/BarberStudio', {
+      headers: {
+        'apikey': 'barbershop_key_123'
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (response.status === 200 && data.qrcode && data.qrcode.base64) {
+      // Retorna uma página HTML bonita com o QR code renderizado
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Conectar WhatsApp - BarberStudio</title>
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+          <style>
+            body {
+              background: #090a0f;
+              color: #f3f4f6;
+              font-family: 'Inter', sans-serif;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+              margin: 0;
+            }
+            .card {
+              background: #11131c;
+              border: 1px solid rgba(226, 184, 85, 0.15);
+              border-radius: 12px;
+              padding: 40px;
+              max-width: 400px;
+              text-align: center;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            }
+            h1 {
+              font-size: 22px;
+              color: #e2b855;
+              margin-bottom: 10px;
+            }
+            p {
+              font-size: 14px;
+              color: #9ca3af;
+              line-height: 1.5;
+              margin-bottom: 25px;
+            }
+            img {
+              border: 4px solid white;
+              border-radius: 8px;
+              margin-bottom: 25px;
+              max-width: 250px;
+            }
+            .step {
+              font-size: 13px;
+              text-align: left;
+              color: #d1d5db;
+              margin-top: 15px;
+            }
+            .step ol {
+              padding-left: 20px;
+              margin: 5px 0;
+            }
+            .footer {
+              font-size: 11px;
+              color: #6b7280;
+              margin-top: 25px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <h1>Conectar WhatsApp</h1>
+            <p>Escaneie o QR Code abaixo com seu WhatsApp para ativar o envio automático de mensagens de agendamento.</p>
+            <img src="${data.qrcode.base64}" alt="QR Code WhatsApp">
+            <div class="step">
+              <strong>Como parear:</strong>
+              <ol>
+                <li>Abra o WhatsApp no seu celular.</li>
+                <li>Toque em <b>Aparelhos Conectados</b> > <b>Conectar um aparelho</b>.</li>
+                <li>Aponte a câmera para esta tela para ler o código.</li>
+              </ol>
+            </div>
+            <div class="footer">Instância: BarberStudio</div>
+          </div>
+        </body>
+        </html>
+      `);
+    } else {
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Conectar WhatsApp - BarberStudio</title>
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+          <style>
+            body { background: #090a0f; color: #f3f4f6; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+            .card { background: #11131c; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; padding: 40px; max-width: 400px; text-align: center; }
+            h1 { font-size: 22px; color: #ef4444; }
+            p { font-size: 14px; color: #9ca3af; line-height: 1.5; margin-bottom: 20px; }
+            button { background: #e2b855; color: #111; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <h1>WhatsApp Desconectado ou Não Inicializado</h1>
+            <p>O contêiner da Evolution API está rodando, mas a instância <b>BarberStudio</b> pode não ter sido criada no terminal do seu servidor ou a chave de API é inválida.</p>
+            <p>Retorno: ${data.response?.message || 'Instância ainda não conectada ou sem QR Code ativo.'}</p>
+            <button onclick="window.location.reload()">Recarregar Página</button>
+          </div>
+        </body>
+        </html>
+      `);
+    }
+  } catch (error) {
+    res.status(500).send(`Erro ao conectar com Evolution API: ${error.message}`);
+  }
+});
+
 // MongoDB Connection
 mongoose.connect(MONGO_URI)
   .then(() => {
