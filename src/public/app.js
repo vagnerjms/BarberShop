@@ -281,7 +281,10 @@ async function fetchBookings() {
     const res = await fetch('/api/bookings');
     bookings = await res.json();
     
-    if (bookingsCountEl) bookingsCountEl.textContent = bookings.leng      if (bookings.length === 0) {
+    if (bookingsCountEl) bookingsCountEl.textContent = bookings.length;
+    
+    if (bookingsListEl) {
+      if (bookings.length === 0) {
         bookingsListEl.innerHTML = `
           <tr>
             <td colspan="6" class="empty-state">Nenhum agendamento realizado hoje.</td>
