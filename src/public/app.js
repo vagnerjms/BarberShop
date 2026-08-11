@@ -641,8 +641,13 @@ function processInput(input) {
         // Criar agendamento real chamando a API
         saveBookingAPI();
       } else {
-        sendBotMessage("Tudo bem. Vamos reiniciar o fluxo.", ['Sou Cliente (Agendar)', 'Sou Gestor / Proprietário']);
-        currentState = 'MENU';
+        if (activeChannel === 'client') {
+          currentState = 'CLIENT_NAME';
+          sendBotMessage("Tudo bem. Vamos reiniciar o agendamento. Qual é o seu <strong>nome completo</strong>?");
+        } else {
+          sendBotMessage("Tudo bem. Vamos reiniciar o fluxo.", ['Sou Cliente (Agendar)', 'Sou Gestor / Proprietário']);
+          currentState = 'MENU';
+        }
       }
       break;
 
@@ -740,8 +745,13 @@ function processInput(input) {
 
     default:
       // Se por algum motivo o estado ficar inválido, volta para o menu
-      currentState = 'MENU';
-      sendBotMessage("Olá! Deseja iniciar um agendamento ou gerenciar sua barbearia?", ['Sou Cliente (Agendar)', 'Sou Gestor / Proprietário']);
+      if (activeChannel === 'client') {
+        currentState = 'CLIENT_NAME';
+        sendBotMessage("Olá! Seja muito bem-vindo ao <strong>BarberStudio</strong>.<br>Para darmos início ao agendamento, qual é o seu <strong>nome completo</strong>?");
+      } else {
+        currentState = 'MENU';
+        sendBotMessage("Olá! Deseja iniciar um agendamento ou gerenciar sua barbearia?", ['Sou Cliente (Agendar)', 'Sou Gestor / Proprietário']);
+      }
       break;
   }
 }
@@ -767,23 +777,44 @@ async function saveBookingAPI() {
     });
     
     if (res.ok) {
-      sendBotMessage(
-        "Agendamento confirmado com sucesso! 🎉<br>" +
-        "O barbeiro foi reservado e a informação foi persistida no banco de dados MongoDB.<br><br>" +
-        "Deseja fazer algo mais?",
-        ['Agendar outro serviço', 'Ir para o Menu Principal']
-      );
+      if (activeChannel === 'client') {
+        sendBotMessage(
+          "Agendamento confirmado com sucesso! 🎉<br>" +
+          "Seu horário foi reservado e a confirmação foi enviada para o seu WhatsApp.<br><br>" +
+          "Deseja fazer algo mais?",
+          ['Agendar outro serviço']
+        );
+      } else {
+        sendBotMessage(
+          "Agendamento confirmado com sucesso! 🎉<br>" +
+          "O barbeiro foi reservado e a informação foi persistida no banco de dados MongoDB.<br><br>" +
+          "Deseja fazer algo mais?",
+          ['Agendar outro serviço', 'Ir para o Menu Principal']
+        );
+      }
       currentState = 'CLIENT_POST_CONFIRM';
       refreshDashboard();
     } else {
       const err = await res.json();
-      sendBotMessage(`Erro ao salvar agendamento: ${err.error}. Deseja tentar novamente?`, ['Sim, Recomeçar', 'Não, Cancelar']);
-      currentState = 'MENU';
+      if (activeChannel === 'client') {
+        sendBotMessage(`Erro ao salvar agendamento: ${err.error}. Vamos reiniciar o fluxo de agendamento.`);
+        currentState = 'CLIENT_NAME';
+        sendBotMessage("Qual é o seu <strong>nome completo</strong>?");
+      } else {
+        sendBotMessage(`Erro ao salvar agendamento: ${err.error}. Deseja tentar novamente?`, ['Sim, Recomeçar', 'Não, Cancelar']);
+        currentState = 'MENU';
+      }
     }
   } catch (error) {
     console.error('Erro ao salvar agendamento:', error);
-    sendBotMessage("Ocorreu um erro ao conectar ao servidor. Deseja tentar de novo?", ['Sim, Recomeçar', 'Não, Cancelar']);
-    currentState = 'MENU';
+    if (activeChannel === 'client') {
+      sendBotMessage("Ocorreu um erro ao conectar ao servidor. Vamos reiniciar o fluxo de agendamento.");
+      currentState = 'CLIENT_NAME';
+      sendBotMessage("Qual é o seu <strong>nome completo</strong>?");
+    } else {
+      sendBotMessage("Ocorreu um erro ao conectar ao servidor. Deseja tentar de novo?", ['Sim, Recomeçar', 'Não, Cancelar']);
+      currentState = 'MENU';
+    }
   }
 }
 
