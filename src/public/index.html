@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BarberStudio - Agendamento de Serviços</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Agende seu horário na BarberStudio de forma rápida e prática pelo nosso assistente virtual.">
+  <meta name="keywords" content="barbearia, agendamento, chatbot, cabelo, barba">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="client-body-bg">
+  <div class="client-app-container">
+    
+    <!-- Centered Mobile-Style Chat Container -->
+    <div class="client-chat-wrapper">
+      
+      <!-- Top Branding Header -->
+      <div class="client-brand-header">
+        <i data-lucide="scissors" class="logo-icon"></i>
+        <h2>Barber<span>Studio</span></h2>
+      </div>
+
+      <div class="chat-card">
+        <!-- Chat Header -->
+        <div class="chat-header">
+          <div class="chat-avatar-container">
+            <div class="chat-avatar">
+              <i data-lucide="bot"></i>
+            </div>
+            <span class="chat-avatar-status"></span>
+          </div>
+          <div class="chat-title-info">
+            <h3 id="chat-bot-title">Assistente de Agendamento</h3>
+            <p>Online • Responde instantaneamente</p>
+          </div>
+          <div class="chat-actions">
+            <button id="reset-chat-btn" title="Reiniciar Agendamento">
+              <i data-lucide="rotate-ccw"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Chat Messages Area -->
+        <div class="chat-body" id="chat-messages">
+          <div class="message system-msg">
+            <p>Chat iniciado em <span id="current-time"></span></p>
+          </div>
+        </div>
+        
+        <!-- Chat Quick Options -->
+        <div class="chat-quick-options" id="chat-quick-options">
+          <!-- Options will render here -->
+        </div>
+
+        <!-- Chat Input -->
+        <form class="chat-input-area" id="chat-form">
+          <input type="text" id="chat-input" placeholder="Digite seu nome ou responda..." autocomplete="off" required>
+          <button type="submit" id="send-btn" aria-label="Enviar Mensagem">
+            <i data-lucide="send"></i>
+          </button>
+        </form>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Custom JS -->
+  <script src="app.js"></script>
+</body>
+</html>

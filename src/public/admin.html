@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BarberStudio - Painel Administrativo</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Sign-In SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="admin-body-bg">
+
+  <!-- LOGIN SCREEN (Access Control) -->
+  <div id="admin-login-screen" class="login-screen-overlay">
+    <div class="login-card">
+      <div class="login-logo">
+        <i data-lucide="scissors" class="logo-icon"></i>
+        <h2>Barber<span>Studio</span></h2>
+      </div>
+      <h3>Acesso Administrativo</h3>
+      <p>Área restrita a proprietários e gestores. Faça login com sua conta do Google para prosseguir.</p>
+      
+      <!-- Real Google Button Container -->
+      <div class="google-auth-container">
+        <div id="g-signin-button"></div>
+      </div>
+      
+      <div class="divider-login"><span>ou</span></div>
+      
+      <!-- Demo Bypass Button -->
+      <button id="demo-login-btn" class="demo-login-btn">
+        <i data-lucide="shield-check"></i> Entrar com Conta de Demonstração
+      </button>
+      
+      <div class="credentials-tip">
+        <i data-lucide="info"></i>
+        <span>Configure <code>GOOGLE_CLIENT_ID</code> nas variáveis do contêiner para habilitar o login oficial da sua barbearia.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN APP LAYOUT (Hidden by default until authenticated) -->
+  <div class="app-container" id="admin-app-layout" style="display: none;">
+    
+    <!-- Top Global Header -->
+    <header class="main-header">
+      <div class="header-logo">
+        <i data-lucide="scissors" class="logo-icon"></i>
+        <h1>Barber<span>Studio</span> <small style="font-size:12px; font-weight:500; color:var(--text-muted); background:var(--border-light); padding:3px 8px; border-radius:4px; margin-left:8px;">PAINEL DO GESTOR</small></h1>
+      </div>
+      
+      <div class="header-right-side">
+        <!-- Google Profile Info Widget -->
+        <div class="header-user-profile" id="header-user-profile">
+          <img id="user-avatar" src="" alt="Avatar do Gestor">
+          <div class="user-info-text">
+            <span id="user-name">Carregando...</span>
+            <small id="user-email">email@google.com</small>
+          </div>
+          <button id="logout-btn" title="Sair do Painel">
+            <i data-lucide="log-out"></i>
+          </button>
+        </div>
+        
+        <div class="header-status">
+          <span class="status-indicator online"></span>
+          <span class="status-text">Serviços Ativos em Container</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Grid Layout -->
+    <main class="main-grid">
+      
+      <!-- COLUMN 1: ADMINISTRATIVE ASSISTANT (Chatbot helper for Manager) -->
+      <section class="chat-section" aria-label="Assistente do Gestor">
+        <div class="chat-card">
+          <!-- Chat Header -->
+          <div class="chat-header">
+            <div class="chat-avatar-container">
+              <div class="chat-avatar" style="background: linear-gradient(135deg, var(--color-primary), #ad8520);">
+                <i data-lucide="bot"></i>
+              </div>
+              <span class="chat-avatar-status"></span>
+            </div>
+            <div class="chat-title-info">
+              <h3 id="chat-bot-title">Assistente de Gestão</h3>
+              <p>Online • Gerenciamento de Plano e Equipe</p>
+            </div>
+            <div class="chat-actions">
+              <button id="reset-chat-btn" title="Reiniciar Central">
+                <i data-lucide="rotate-ccw"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Chat Messages Area -->
+          <div class="chat-body" id="chat-messages">
+            <div class="message system-msg">
+              <p>Central de atendimento iniciada em <span id="current-time"></span></p>
+            </div>
+          </div>
+          
+          <!-- Chat Quick Options -->
+          <div class="chat-quick-options" id="chat-quick-options">
+            <!-- Options will render here -->
+          </div>
+
+          <!-- Chat Input -->
+          <form class="chat-input-area" id="chat-form">
+            <input type="text" id="chat-input" placeholder="Digite uma instrução..." autocomplete="off" required>
+            <button type="submit" id="send-btn" aria-label="Enviar Mensagem">
+              <i data-lucide="send"></i>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- COLUMN 2: MANAGER DASHBOARD -->
+      <section class="dashboard-section" aria-label="Painel Administrativo">
+        <div class="dashboard-grid">
+          
+          <!-- Card 1: Subscription Overview (Billing) -->
+          <div class="dash-card billing-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="credit-card" class="card-icon text-gold"></i>
+                <h2>Assinatura do Sistema</h2>
+              </div>
+              <span class="badge badge-active">Ativo</span>
+            </div>
+            
+            <div class="billing-main">
+              <div class="billing-price-box">
+                <span class="currency">R$</span>
+                <span class="price" id="billing-total">0,00</span>
+                <span class="period">/mês</span>
+              </div>
+              <div class="billing-details">
+                <div class="detail-row">
+                  <span>Plano Base (1 Barbeiro)</span>
+                  <strong>R$ 50,00</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Barbeiros Adicionais (<span id="billing-additional-count">0</span>)</span>
+                  <strong>+ R$ <span id="billing-additional-fee">0,00</span></strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="billing-formula-info">
+              <p><i data-lucide="info"></i> <strong>Regra de Cobrança Proporcional:</strong> R$ 50,00 base + R$ 25,00 por barbeiro adicional ativo. Ao remover membros, a fatura reduz R$ 25,00 no próximo ciclo.</p>
+            </div>
+          </div>
+
+          <!-- Card 2: Barbers List -->
+          <div class="dash-card team-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="users" class="card-icon"></i>
+                <h2>Equipe de Barbeiros (<span id="barbers-count">0</span>)</h2>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="barbers-list-container" id="barbers-list">
+                <div class="loading-state">Carregando barbeiros...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Scheduled Services (Bookings) -->
+          <div class="dash-card bookings-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="calendar" class="card-icon"></i>
+                <h2>Agendamentos Realizados (<span id="bookings-count">0</span>)</h2>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="bookings-table-wrapper">
+                <table class="bookings-table">
+                  <thead>
+                    <tr>
+                      <th>Cliente</th>
+                      <th>Serviço</th>
+                      <th>Barbeiro</th>
+                      <th>Horário</th>
+                      <th>Contato</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bookings-list">
+                    <tr>
+                      <td colspan="5" class="empty-state">Nenhum agendamento realizado.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Audit Logs -->
+          <div class="dash-card logs-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="activity" class="card-icon"></i>
+                <h2>Logs do Sistema (MongoDB)</h2>
+              </div>
+            </div>
+            <div class="card-body">
+              <ul class="logs-list" id="logs-list">
+                <li class="empty-state">Carregando logs...</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Custom JS -->
+  <script src="app.js"></script>
+</body>
+</html>

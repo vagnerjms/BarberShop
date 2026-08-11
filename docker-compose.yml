@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  db:
+    image: mongo:latest
+    container_name: barbershop-db
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+  web:
+    build: .
+    container_name: barbershop-web
+    ports:
+      - "8085:3000"
+    environment:
+      - MONGO_URI=mongodb://db:27017/barbershop
+      - PORT=3000
+      - GOOGLE_CLIENT_ID=477627891832-s7jgffr8tqt6bb6fl2hhj8aems36v5ih.apps.googleusercontent.com
+    depends_on:
+      - db
+    restart: always
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: barbershop-postgres
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_DB=evolution
+      - POSTGRES_USER=evolution
+      - POSTGRES_PASSWORD=evolution_password_123
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: always
+
+  evolution:
+    image: evoapicloud/evolution-api:latest
+    container_name: barbershop-evolution
+    ports:
+      - "8086:8080"
+    environment:
+      - SERVER_PORT=8080
+      - SERVER_URL=http://localhost:8086
+      - AUTHENTICATION_TYPE=apikey
+      - AUTHENTICATION_API_KEY=barbershop_key_123
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://evolution:evolution_password_123@postgres:5432/evolution?schema=public
+      - DATABASE_CONNECTION_CLIENT_NAME=barbershop_evolution
+    depends_on:
+      - postgres
+    restart: always
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: barbershop-n8n
+    ports:
+      - "5679:5678"
+    environment:
+      - N8N_PORT=5678
+      - N8N_SECURE_COOKIE=false
+    volumes:
+      - n8n-data:/home/node/.n8n
+    restart: always
+
+volumes:
+  mongo-data:
+  postgres-data:
+  evolution-data:
+  n8n-data:
