@@ -19,105 +19,138 @@ app.get('/connect', async (req, res) => {
   try {
     // 1. Verificar primeiro o status da conexão da instância
     let stateResponse;
+    let instanceExists = false;
+    let isConnected = false;
+    
     try {
       stateResponse = await fetch('http://evolution:8080/instance/connectionState/BarberStudio', {
         headers: { 'apikey': 'barbershop_key_123' }
       });
+      
+      if (stateResponse && stateResponse.ok) {
+        const stateData = await stateResponse.json();
+        console.log('[DEBUG /connect] Connection State:', stateData);
+        if (stateData.instance) {
+          instanceExists = true;
+          if (stateData.instance.state === 'open') {
+            isConnected = true;
+          }
+        }
+      } else if (stateResponse && stateResponse.status === 404) {
+        console.log('[DEBUG /connect] Instância BarberStudio retornou 404 na checagem inicial.');
+        instanceExists = false;
+      }
     } catch (e) {
       console.warn('Erro ao checar status de conexao:', e.message);
     }
     
-    if (stateResponse && stateResponse.ok) {
-      const stateData = await stateResponse.json();
-      console.log('[DEBUG /connect] Connection State:', stateData);
-      
-      // Se a conexão já estiver aberta/conectada, exibe tela de sucesso
-      if (stateData.instance && stateData.instance.state === 'open') {
-        return res.send(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>WhatsApp Conectado - BarberStudio</title>
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-            <style>
-              body {
-                background: #090a0f;
-                color: #f3f4f6;
-                font-family: 'Inter', sans-serif;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 100vh;
-                margin: 0;
-              }
-              .card {
-                background: #11131c;
-                border: 1px solid rgba(16, 185, 129, 0.3);
-                border-radius: 12px;
-                padding: 40px;
-                max-width: 400px;
-                text-align: center;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-              }
-              .icon {
-                font-size: 50px;
-                color: #10b981;
-                margin-bottom: 20px;
-              }
-              h1 {
-                font-size: 22px;
-                color: #10b981;
-                margin-bottom: 10px;
-              }
-              p {
-                font-size: 14px;
-                color: #9ca3af;
-                line-height: 1.5;
-                margin-bottom: 25px;
-              }
-              .status-badge {
-                display: inline-block;
-                background: rgba(16, 185, 129, 0.1);
-                color: #10b981;
-                border: 1px solid rgba(16, 185, 129, 0.2);
-                padding: 6px 12px;
-                border-radius: 20px;
-                font-size: 12px;
-                font-weight: 600;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="card">
-              <div class="icon">✓</div>
-              <h1>Conectado com Sucesso!</h1>
-              <p>O seu WhatsApp já está pareado com a Evolution API e pronto para disparar notificações automáticas de agendamento.</p>
-              <span class="status-badge">Status: Conectado (Open)</span>
-            </div>
-          </body>
-          </html>
-        `);
-      }
+    // Se a conexão já estiver aberta/conectada, exibe tela de sucesso
+    if (isConnected) {
+      return res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>WhatsApp Conectado - BarberStudio</title>
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+          <style>
+            body {
+              background: #090a0f;
+              color: #f3f4f6;
+              font-family: 'Inter', sans-serif;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+              margin: 0;
+            }
+            .card {
+              background: #11131c;
+              border: 1px solid rgba(16, 185, 129, 0.3);
+              border-radius: 12px;
+              padding: 40px;
+              max-width: 400px;
+              text-align: center;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            }
+            .icon {
+              font-size: 50px;
+              color: #10b981;
+              margin-bottom: 20px;
+            }
+            h1 {
+              font-size: 22px;
+              color: #10b981;
+              margin-bottom: 10px;
+            }
+            p {
+              font-size: 14px;
+              color: #9ca3af;
+              line-height: 1.5;
+              margin-bottom: 25px;
+            }
+            .status-badge {
+              display: inline-block;
+              background: rgba(16, 185, 129, 0.1);
+              color: #10b981;
+              border: 1px solid rgba(16, 185, 129, 0.2);
+              padding: 6px 12px;
+              border-radius: 20px;
+              font-size: 12px;
+              font-weight: 600;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <div class="icon">✓</div>
+            <h1>Conectado com Sucesso!</h1>
+            <p>O seu WhatsApp já está pareado com a Evolution API e pronto para disparar notificações automáticas de agendamento.</p>
+            <span class="status-badge">Status: Conectado (Open)</span>
+          </div>
+        </body>
+        </html>
+      `);
     }
 
-    // 2. Se não estiver conectado, busca o QR Code
-    const response = await fetch('http://evolution:8080/instance/connect/BarberStudio', {
-      headers: {
-        'apikey': 'barbershop_key_123'
-      }
-    });
+    let response;
+    let data;
     
-    const data = await response.json();
-    console.log('[DEBUG /connect] Status da resposta:', response.status, 'Retorno (início):', JSON.stringify(data).substring(0, 150));
+    if (!instanceExists) {
+      // 2. Se a instância não existe no banco da Evolution, vamos criá-la dinamicamente!
+      console.log('[DEBUG /connect] Criando a instância BarberStudio dinamicamente...');
+      response = await fetch('http://evolution:8080/instance/create', {
+        method: 'POST',
+        headers: {
+          'apikey': 'barbershop_key_123',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          instanceName: 'BarberStudio',
+          qrcode: true,
+          integration: 'WHATSAPP-BAILEYS'
+        })
+      });
+      data = await response.json();
+      console.log('[DEBUG /connect] Resposta da criação:', response.status, 'Retorno (início):', JSON.stringify(data).substring(0, 150));
+    } else {
+      // 3. Se a instância já existe mas está desconectada, busca o QR Code
+      response = await fetch('http://evolution:8080/instance/connect/BarberStudio', {
+        headers: {
+          'apikey': 'barbershop_key_123'
+        }
+      });
+      data = await response.json();
+      console.log('[DEBUG /connect] Resposta da conexão:', response.status, 'Retorno (início):', JSON.stringify(data).substring(0, 150));
+    }
     
     let qrImageSrc = '';
-    if (data.qrcode && data.qrcode.base64) {
+    if (data && data.qrcode && data.qrcode.base64) {
       qrImageSrc = data.qrcode.base64;
-    } else if (data.base64) {
+    } else if (data && data.base64) {
       qrImageSrc = data.base64;
-    } else if (data.code) {
+    } else if (data && data.code) {
       qrImageSrc = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(data.code)}`;
-    } else if (data.qrcode && data.qrcode.code) {
+    } else if (data && data.qrcode && data.qrcode.code) {
       qrImageSrc = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(data.qrcode.code)}`;
     }
     
@@ -221,7 +254,7 @@ app.get('/connect', async (req, res) => {
           <div class="card">
             <h1>WhatsApp Desconectado ou Não Inicializado</h1>
             <p>O contêiner da Evolution API está rodando, mas a instância <b>BarberStudio</b> pode não ter sido criada no terminal do seu servidor ou a chave de API é inválida.</p>
-            <p>Retorno: ${data.response?.message || data.message || 'Instância ainda não conectada ou sem QR Code ativo.'}</p>
+            <p>Retorno: ${data?.response?.message || data?.message || 'Instância ainda não conectada ou sem QR Code ativo.'}</p>
             <button onclick="window.location.reload()">Recarregar Página</button>
           </div>
         </body>
@@ -232,6 +265,7 @@ app.get('/connect', async (req, res) => {
     res.status(500).send(`Erro ao conectar com Evolution API: ${error.message}`);
   }
 });
+
 
 // MongoDB Connection
 mongoose.connect(MONGO_URI)
