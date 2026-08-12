@@ -36,7 +36,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=http://evolution:8080/message/sendText/BarberStudio",
+        "url": "=http://179.197.231.106:8086/message/sendText/BarberStudio",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
@@ -63,7 +63,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=http://evolution:8080/message/sendText/BarberStudio",
+        "url": "=http://179.197.231.106:8086/message/sendText/BarberStudio",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {

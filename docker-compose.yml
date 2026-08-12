@@ -17,6 +17,8 @@ services:
       - MONGO_URI=mongodb://db:27017/barbershop
       - PORT=3000
       - GOOGLE_CLIENT_ID=477627891832-s7jgffr8tqt6bb6fl2hhj8aems36v5ih.apps.googleusercontent.com
+      - N8N_WEBHOOK_URL=http://179.197.231.106:5679/webhook/booking
+      - N8N_CANCEL_WEBHOOK_URL=http://179.197.231.106:5679/webhook/booking-cancel
     depends_on:
       - db
     restart: always
@@ -53,21 +55,7 @@ services:
     depends_on:
       - postgres
     restart: always
-
-  n8n:
-    image: docker.n8n.io/n8nio/n8n:latest
-    container_name: barbershop-n8n
-    ports:
-      - "5679:5678"
-    environment:
-      - N8N_PORT=5678
-      - N8N_SECURE_COOKIE=false
-    volumes:
-      - n8n-data:/home/node/.n8n
-    restart: always
-
 volumes:
   mongo-data:
   postgres-data:
   evolution-data:
-  n8n-data:
