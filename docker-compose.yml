@@ -17,8 +17,8 @@ services:
       - MONGO_URI=mongodb://db:27017/barbershop
       - PORT=3000
       - GOOGLE_CLIENT_ID=477627891832-s7jgffr8tqt6bb6fl2hhj8aems36v5ih.apps.googleusercontent.com
-      - N8N_WEBHOOK_URL=http://179.197.231.106:5679/webhook/booking
-      - N8N_CANCEL_WEBHOOK_URL=http://179.197.231.106:5679/webhook/booking-cancel
+      - N8N_WEBHOOK_URL=http://179.197.231.106:5678/webhook/booking
+      - N8N_CANCEL_WEBHOOK_URL=http://179.197.231.106:5678/webhook/booking-cancel
     depends_on:
       - db
     restart: always
